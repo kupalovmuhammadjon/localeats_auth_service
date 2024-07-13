@@ -102,3 +102,25 @@ func (a *AuthRepo) LogOut(ctx context.Context, token string) error {
 
 	return nil
 }
+
+func (a *AuthRepo) RefreshToken(ctx context.Context, token string) error {
+	query := `
+	select
+		case when token = $1 then true else false
+	from
+		refresh_tokens
+	where
+		deleted_at is null and token = $1
+	`
+
+	exists := false
+	err := a.Db.QueryRowContext(ctx, query, token).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if !exists{
+		return fmt.Errorf("token does not exists")
+	}
+
+	return nil
+}

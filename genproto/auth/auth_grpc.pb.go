@@ -26,6 +26,7 @@ type AuthClient interface {
 	Login(ctx context.Context, in *ReqLogin, opts ...grpc.CallOption) (*Tokens, error)
 	Logout(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Void, error)
 	RefreshToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Tokens, error)
+	ResetPassword(ctx context.Context, in *ReqResetPassword, opts ...grpc.CallOption) (*Status, error)
 }
 
 type authClient struct {
@@ -72,6 +73,15 @@ func (c *authClient) RefreshToken(ctx context.Context, in *Token, opts ...grpc.C
 	return out, nil
 }
 
+func (c *authClient) ResetPassword(ctx context.Context, in *ReqResetPassword, opts ...grpc.CallOption) (*Status, error) {
+	out := new(Status)
+	err := c.cc.Invoke(ctx, "/auth.Auth/ResetPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type AuthServer interface {
 	Login(context.Context, *ReqLogin) (*Tokens, error)
 	Logout(context.Context, *Token) (*Void, error)
 	RefreshToken(context.Context, *Token) (*Tokens, error)
+	ResetPassword(context.Context, *ReqResetPassword) (*Status, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedAuthServer) Logout(context.Context, *Token) (*Void, error) {
 }
 func (UnimplementedAuthServer) RefreshToken(context.Context, *Token) (*Tokens, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
+}
+func (UnimplementedAuthServer) ResetPassword(context.Context, *ReqResetPassword) (*Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -184,6 +198,24 @@ func _Auth_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqResetPassword)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/ResetPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ResetPassword(ctx, req.(*ReqResetPassword))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,10 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RefreshToken",
 			Handler:    _Auth_RefreshToken_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _Auth_ResetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

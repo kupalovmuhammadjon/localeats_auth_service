@@ -43,7 +43,7 @@ func Load() *Config {
 	config.REDIS_HOST = cast.ToString(coalesce("REDIS_HOST", "root"))
 	config.REDIS_PORT = cast.ToString(coalesce("REDIS_PORT", "root"))
 	config.REDIS_PASSWORD = cast.ToString(coalesce("REDIS_PASSWORD", "root"))
-	config.LOG_PATH = cast.ToString(coalesce("REDIS_PASSWORD", "areyouinterested.log"))
+	config.LOG_PATH = cast.ToString(coalesce("LOG_PATH", "areyouinterested.log"))
 
 	return &config
 }

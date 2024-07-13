@@ -4,7 +4,7 @@ import (
 	"auth_service/api"
 	"auth_service/config"
 	"auth_service/models"
-	logger "auth_service/pkg"
+	logger "auth_service/pkg/logger"
 	"auth_service/storage/postgres"
 	"auth_service/storage/redis"
 
@@ -13,11 +13,9 @@ import (
 
 func main() {
 	cfg := config.Load()
-
 	log, err := logger.New("debug", "development", cfg.LOG_PATH)
 	if err != nil {
-		log.Fatal("Failed to initialize logger", zap.Error(err))
-		return
+		panic(err)
 	}
 
 	postgresDb, err := postgres.ConnectDB()
@@ -27,7 +25,7 @@ func main() {
 	}
 	defer postgresDb.Close()
 
-	redisDb, err := redis.ConnectDB() 
+	redisDb, err := redis.ConnectDB()
 	if err != nil {
 		log.Fatal("Cannot connect to Redis", zap.Error(err))
 		return
@@ -35,7 +33,7 @@ func main() {
 	defer redisDb.Close()
 
 	systemConfig := &models.SystemConfig{
-		Config: cfg,
+		Config:     cfg,
 		PostgresDb: postgresDb,
 		RedisDb:    redisDb,
 		Logger:     log,

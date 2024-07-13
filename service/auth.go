@@ -39,8 +39,12 @@ func (a *AuthService) Login(ctx context.Context, req *pb.ReqLogin) (*pb.Tokens, 
 		return nil, err
 	}
 	tokens, err := tokens.GenerateJWT(user)
+	if err != nil {
+		a.log.Error("Tokens are not generated ", zap.Error(err))
+		return nil, err
+	}
 
-	return tokens, err
+	return tokens, nil
 }
 func (a *AuthService) Logout(ctx context.Context, req *pb.Token) (*pb.Void, error) {
 	err := a.authRepo.LogOut(ctx, req.RefreshToken)
@@ -48,5 +52,18 @@ func (a *AuthService) Logout(ctx context.Context, req *pb.Token) (*pb.Void, erro
 	return &pb.Void{}, err
 }
 func (a *AuthService) RefreshToken(ctx context.Context, req *pb.Token) (*pb.Tokens, error) {
-	return &pb.Tokens{}, nil
+	
+	
+	err := a.authRepo.RefreshToken(ctx, req.RefreshToken)
+	if err != nil {
+		a.log.Error("Error while refresh token ", zap.Error(err))
+		return nil, err
+	}
+	tokens, err := tokens.GenerateAccessToken(req.RefreshToken)
+	if err != nil {
+		a.log.Error("Access token is not generated ", zap.Error(err))
+		return nil, err
+	}
+	
+	return tokens, nil
 }

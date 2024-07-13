@@ -37,9 +37,9 @@ func NewRouter(sysConfig *models.SystemConfig) *gin.Engine {
 	auth := main.Group("/auth")
 
 	auth.POST("/register", handlerV1.Register)
-	// auth.POST("/login")
-	// auth.POST("/logout")
-	// auth.POST("/refreshtoken")
+	auth.POST("/login", handlerV1.Login)
+	auth.POST("/logout", handlerV1.Logout)
+	auth.POST("/refreshtoken", handlerV1.RefreshToken)
 
 	return router
 }

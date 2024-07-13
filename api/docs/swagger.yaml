@@ -13,6 +13,22 @@ definitions:
       username:
         type: string
     type: object
+  auth.ReqLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  auth.Tokens:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+    type: object
   models.Error:
     properties:
       error:
@@ -31,6 +47,93 @@ info:
   title: LocalEats API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: checks the user and returns tokens
+      operationId: login
+      parameters:
+      - description: User Information to log in
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ReqLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns access and refresh tokens
+          schema:
+            $ref: '#/definitions/auth.Tokens'
+        "400":
+          description: You did something wrong
+          schema:
+            $ref: '#/definitions/models.Error'
+        "401":
+          description: if Access token fails it will returns this
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Something went wrong in server
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Login user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: removes refresh token gets token from header
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: some thing wrong with what you sent
+          schema:
+            $ref: '#/definitions/models.Error'
+        "401":
+          description: Invalid token in header
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Something went wrong in server
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: log outs user
+      tags:
+      - Auth
+  /auth/refreshtoken:
+    post:
+      consumes:
+      - application/json
+      description: gives new access token through refresh token
+      operationId: refresh
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: some thing wrong with what you sent
+          schema:
+            $ref: '#/definitions/models.Error'
+        "401":
+          description: Invalid token in header
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Something went wrong in server
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: refresh token
+      tags:
+      - Auth
   /auth/register:
     post:
       consumes:
