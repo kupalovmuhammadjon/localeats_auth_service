@@ -24,8 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthClient interface {
 	Register(ctx context.Context, in *ReqCreateUser, opts ...grpc.CallOption) (*User, error)
 	Login(ctx context.Context, in *ReqLogin, opts ...grpc.CallOption) (*Tokens, error)
-	Logout(ctx context.Context, in *ReqLogin, opts ...grpc.CallOption) (*Tokens, error)
-	RefreshToken(ctx context.Context, in *ReqRefresh, opts ...grpc.CallOption) (*Tokens, error)
+	Logout(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Void, error)
+	RefreshToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Tokens, error)
 }
 
 type authClient struct {
@@ -54,8 +54,8 @@ func (c *authClient) Login(ctx context.Context, in *ReqLogin, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *authClient) Logout(ctx context.Context, in *ReqLogin, opts ...grpc.CallOption) (*Tokens, error) {
-	out := new(Tokens)
+func (c *authClient) Logout(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
 	err := c.cc.Invoke(ctx, "/auth.Auth/Logout", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (c *authClient) Logout(ctx context.Context, in *ReqLogin, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *authClient) RefreshToken(ctx context.Context, in *ReqRefresh, opts ...grpc.CallOption) (*Tokens, error) {
+func (c *authClient) RefreshToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Tokens, error) {
 	out := new(Tokens)
 	err := c.cc.Invoke(ctx, "/auth.Auth/RefreshToken", in, out, opts...)
 	if err != nil {
@@ -78,8 +78,8 @@ func (c *authClient) RefreshToken(ctx context.Context, in *ReqRefresh, opts ...g
 type AuthServer interface {
 	Register(context.Context, *ReqCreateUser) (*User, error)
 	Login(context.Context, *ReqLogin) (*Tokens, error)
-	Logout(context.Context, *ReqLogin) (*Tokens, error)
-	RefreshToken(context.Context, *ReqRefresh) (*Tokens, error)
+	Logout(context.Context, *Token) (*Void, error)
+	RefreshToken(context.Context, *Token) (*Tokens, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -93,10 +93,10 @@ func (UnimplementedAuthServer) Register(context.Context, *ReqCreateUser) (*User,
 func (UnimplementedAuthServer) Login(context.Context, *ReqLogin) (*Tokens, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServer) Logout(context.Context, *ReqLogin) (*Tokens, error) {
+func (UnimplementedAuthServer) Logout(context.Context, *Token) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
 }
-func (UnimplementedAuthServer) RefreshToken(context.Context, *ReqRefresh) (*Tokens, error) {
+func (UnimplementedAuthServer) RefreshToken(context.Context, *Token) (*Tokens, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
@@ -149,7 +149,7 @@ func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _Auth_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReqLogin)
+	in := new(Token)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -161,13 +161,13 @@ func _Auth_Logout_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/auth.Auth/Logout",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).Logout(ctx, req.(*ReqLogin))
+		return srv.(AuthServer).Logout(ctx, req.(*Token))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Auth_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReqRefresh)
+	in := new(Token)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func _Auth_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/auth.Auth/RefreshToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).RefreshToken(ctx, req.(*ReqRefresh))
+		return srv.(AuthServer).RefreshToken(ctx, req.(*Token))
 	}
 	return interceptor(ctx, in, info, handler)
 }
