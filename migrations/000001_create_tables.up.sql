@@ -14,7 +14,8 @@ CREATE TABLE users (
     years_of_experience INTEGER CHECK (years_of_experience >= 0),
     is_verified BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE user_preferences (
@@ -22,5 +23,20 @@ CREATE TABLE user_preferences (
     cuisine_type VARCHAR(50),
     dietary_preferences TEXT[],
     favorite_kitchen_ids UUID[],
-    PRIMARY KEY (user_id)
+    PRIMARY KEY (user_id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
+
+CREATE TABLE refresh_tokens (
+    id uuid DEFAULT gen_random_uuid() not null,
+    user_id uuid REFERENCES users(id) not null,
+    token text UNIQUE not null,
+    expires_at bigint not null,
+    created_at TIMESTAMP default CURRENT_TIMESTAMP not null,
+    revoked boolean DEFAULT false
+);
+
+CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
