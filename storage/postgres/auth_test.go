@@ -3,6 +3,7 @@ package postgres
 import (
 	pb "auth_service/genproto/auth"
 	"context"
+	"log"
 
 	"testing"
 )
@@ -45,5 +46,25 @@ func TestLogin(t *testing.T){
 	_, err := a.Login(context.Background(), &log)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func TestLogout(t *testing.T){
+	a := newAuthRepo()
+
+
+	err := a.LogOut(context.Background(), "gf")
+	if err == nil {
+		log.Println("verifying invalid token")
+	}
+}
+
+func TestRefreshToken(t *testing.T){
+	a := newAuthRepo()
+
+
+	err := a.RefreshToken(context.Background(), "gvcxf")
+	if err == nil {
+		log.Println("verifying invalid token")
 	}
 }
