@@ -18,6 +18,10 @@ type Config struct {
 	DB_PASSWORD         string
 	ACCESS_SIGNING_KEY  string
 	REFRESH_SIGNING_KEY string
+	REDIS_HOST          string
+	REDIS_PORT          string
+	REDIS_PASSWORD      string
+	LOG_PATH            string
 }
 
 func Load() *Config {
@@ -36,6 +40,10 @@ func Load() *Config {
 	config.DB_PASSWORD = cast.ToString(coalesce("DB_PASSWORD", "root"))
 	config.ACCESS_SIGNING_KEY = cast.ToString(coalesce("ACCESS_SIGNING_KEY", "root"))
 	config.REFRESH_SIGNING_KEY = cast.ToString(coalesce("REFRESH_SIGNING_KEY", "root"))
+	config.REDIS_HOST = cast.ToString(coalesce("REDIS_HOST", "root"))
+	config.REDIS_PORT = cast.ToString(coalesce("REDIS_PORT", "root"))
+	config.REDIS_PASSWORD = cast.ToString(coalesce("REDIS_PASSWORD", "root"))
+	config.LOG_PATH = cast.ToString(coalesce("REDIS_PASSWORD", "areyouinterested.log"))
 
 	return &config
 }

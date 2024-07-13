@@ -15,6 +15,10 @@ type AuthRepo struct {
 	Db *sql.DB
 }
 
+func NewAuthRepo(db *sql.DB) *AuthRepo{
+	return &AuthRepo{Db: db}
+}
+
 func (a *AuthRepo) Register(ctx context.Context, user *pb.ReqCreateUser) (*pb.User, error) {
 	query := `
 	insert into
