@@ -4,7 +4,7 @@ import (
 	"auth_service/config"
 	"database/sql"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 

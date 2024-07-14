@@ -8,12 +8,26 @@ definitions:
         type: string
       password:
         type: string
+      phone_number:
+        type: string
       user_type:
         type: string
       username:
         type: string
     type: object
   auth.ReqLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  auth.ReqResetPassword:
+    properties:
+      email:
+        type: string
+    type: object
+  auth.ReqUpdatePassword:
     properties:
       email:
         type: string
@@ -36,7 +50,7 @@ definitions:
       message:
         type: string
     type: object
-host: localhost:8080
+host: localhost:9999
 info:
   contact: {}
   description: LocalEats is a program to order local and homemade food with quality
@@ -79,6 +93,8 @@ paths:
           description: Something went wrong in server
           schema:
             $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
       summary: Login user
       tags:
       - Auth
@@ -161,6 +177,77 @@ paths:
           schema:
             $ref: '#/definitions/models.Error'
       summary: Register User
+      tags:
+      - Auth
+  /auth/resetpassword:
+    post:
+      consumes:
+      - application/json
+      description: send info about reserttting poassword to email
+      operationId: reset
+      parameters:
+      - description: email of the user
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ReqResetPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: some thing wrong with what you sent
+          schema:
+            $ref: '#/definitions/models.Error'
+        "401":
+          description: Invalid token in header
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Something went wrong in server
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: resets password
+      tags:
+      - Auth
+  /auth/updatepassword/{email}:
+    post:
+      consumes:
+      - application/json
+      description: updates password
+      operationId: updatepassword
+      parameters:
+      - description: email of the user
+        in: path
+        name: email
+        required: true
+        type: string
+      - description: email of the user
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ReqUpdatePassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: some thing wrong with what you sent
+          schema:
+            $ref: '#/definitions/models.Error'
+        "401":
+          description: Invalid token in header
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Something went wrong in server
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: update password
       tags:
       - Auth
 securityDefinitions:

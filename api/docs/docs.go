@@ -21,6 +21,11 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "checks the user and returns tokens",
                 "consumes": [
                     "application/json"
@@ -193,6 +198,113 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/auth/resetpassword": {
+            "post": {
+                "description": "send info about reserttting poassword to email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "resets password",
+                "operationId": "reset",
+                "parameters": [
+                    {
+                        "description": "email of the user",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.ReqResetPassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "some thing wrong with what you sent",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token in header",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong in server",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/updatepassword/{email}": {
+            "post": {
+                "description": "updates password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "update password",
+                "operationId": "updatepassword",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email of the user",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "email of the user",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.ReqUpdatePassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "some thing wrong with what you sent",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token in header",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong in server",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -208,6 +320,9 @@ const docTemplate = `{
                 "password": {
                     "type": "string"
                 },
+                "phone_number": {
+                    "type": "string"
+                },
                 "user_type": {
                     "type": "string"
                 },
@@ -217,6 +332,25 @@ const docTemplate = `{
             }
         },
         "auth.ReqLogin": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.ReqResetPassword": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.ReqUpdatePassword": {
             "type": "object",
             "properties": {
                 "email": {
@@ -265,14 +399,13 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:9999",
 	BasePath:         "/localeats.uz",
 	Schemes:          []string{},
 	Title:            "LocalEats API",
 	Description:      "LocalEats is a program to order local and homemade food with quality and precise delivery.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-
 }
 
 func init() {

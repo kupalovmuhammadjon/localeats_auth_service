@@ -7,6 +7,7 @@ import (
 	"auth_service/pkg/validations"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -42,6 +43,8 @@ func (h *HandlerV1) Register(ctx *gin.Context) {
 			Message: "Invalid Email",
 			Error:   err.Error(),
 		})
+		h.log.Info("invalid Email ", zap.Error(err))
+		return
 	}
 	err = validations.ValidatePassword(req.Password)
 	if err != nil {
@@ -49,6 +52,8 @@ func (h *HandlerV1) Register(ctx *gin.Context) {
 			Message: "Invalid Password",
 			Error:   err.Error(),
 		})
+		h.log.Info("invalid password ", zap.Error(err))
+		return
 	}
 
 	user, err := h.authService.Register(ctx, &req)
@@ -95,6 +100,8 @@ func (h *HandlerV1) Login(ctx *gin.Context) {
 			Message: "Invalid Email",
 			Error:   err.Error(),
 		})
+		h.log.Info("invalid Email ", zap.Error(err))
+		return
 	}
 	err = validations.ValidatePassword(req.Password)
 	if err != nil {
@@ -102,6 +109,8 @@ func (h *HandlerV1) Login(ctx *gin.Context) {
 			Message: "Invalid Password",
 			Error:   err.Error(),
 		})
+		h.log.Info("invalid password ", zap.Error(err))
+		return
 	}
 
 	tokens, err := h.authService.Login(ctx, &req)
@@ -113,6 +122,9 @@ func (h *HandlerV1) Login(ctx *gin.Context) {
 		h.log.Error("Error while finding user ", zap.Error(err))
 		return
 	}
+
+	ctx.SetCookie("access_token", tokens.AccessToken, int(time.Hour), "/", "", false, true)
+	ctx.SetCookie("refresh_token", tokens.RefreshToken, int(time.Hour*24*7), "/", "", false, true)
 
 	ctx.JSON(200, tokens)
 }
@@ -129,8 +141,16 @@ func (h *HandlerV1) Login(ctx *gin.Context) {
 // @Failure 500 {object} models.Error "Something went wrong in server"
 // @Router /auth/logout [post]
 func (h *HandlerV1) Logout(ctx *gin.Context) {
-	refresh := ctx.GetHeader("refresh_token")
-	_, err := tokens.ExtractClaims(refresh, true)
+	refresh, err := ctx.Cookie("refresh_token")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Invalid token",
+			Error:   err.Error(),
+		})
+		h.log.Info("Invalid token ", zap.Error(err))
+		return
+	}
+	_, err = tokens.ExtractClaims(refresh, true)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Error{
 			Message: "Invalid token",
@@ -149,6 +169,8 @@ func (h *HandlerV1) Logout(ctx *gin.Context) {
 		h.log.Error("Error while finding user ", zap.Error(err))
 		return
 	}
+	ctx.SetCookie("access_token", "", -1, "/", "", false, true)
+	ctx.SetCookie("refresh_token", "", -1, "/", "", false, true)
 
 	ctx.JSON(200, tokens)
 }
@@ -165,14 +187,23 @@ func (h *HandlerV1) Logout(ctx *gin.Context) {
 // @Failure 500 {object} models.Error "Something went wrong in server"
 // @Router /auth/refreshtoken [post]
 func (h *HandlerV1) RefreshToken(ctx *gin.Context) {
-	refresh := ctx.GetHeader("refresh_token")
-	_, err := tokens.ExtractClaims(refresh, true)
+	refresh, err := ctx.Cookie("refresh_token")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Error while getting refresh token from cookie",
+			Error:   err.Error(),
+		})
+		h.log.Info("Error while getting refresh token from cookie ", zap.Error(err))
+		return
+	}
+	_, err = tokens.ExtractClaims(refresh, true)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Error{
 			Message: "Invalid token",
 			Error:   err.Error(),
 		})
 		h.log.Info("Invalid token ", zap.Error(err))
+		h.log.Info("Invalid token ", zap.Any("input", refresh))
 		return
 	}
 
@@ -187,4 +218,111 @@ func (h *HandlerV1) RefreshToken(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, tokens)
+}
+
+// @Summary resets password
+// @Description send info about reserttting poassword to email
+// @Tags Auth
+// @ID reset
+// @Accept json
+// @Produce json
+// @Param email body auth.ReqResetPassword true "email of the user"
+// @Success 200
+// @Failure 400 {object} models.Error "some thing wrong with what you sent"
+// @Failure 401 {object} models.Error "Invalid token in header"
+// @Failure 500 {object} models.Error "Something went wrong in server"
+// @Router /auth/resetpassword [post]
+func (h *HandlerV1) ResetPassword(ctx *gin.Context) {
+
+	var body pb.ReqResetPassword
+
+	err := json.NewDecoder(ctx.Request.Body).Decode(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Error while decoding request json",
+			Error:   err.Error(),
+		})
+		h.log.Error("Error while decoding request json ", zap.Error(err))
+		return
+	}
+	err = validations.ValidateEmail(body.Email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Invalid Email",
+			Error:   err.Error(),
+		})
+		h.log.Info("invalid Email ", zap.Error(err))
+		return
+	}
+
+	status, err := h.authService.ResetPassword(ctx, &body)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.Error{
+			Message: "Failed to send email",
+			Error:   err.Error(),
+		})
+		h.log.Error("Failed to send email ", zap.Error(err))
+		return
+	}
+
+	ctx.JSON(200, status)
+}
+
+// @Summary update password
+// @Description updates password
+// @Tags Auth
+// @ID updatepassword
+// @Accept json
+// @Produce json
+// @Param email path string true "email of the user"
+// @Param password body auth.ReqUpdatePassword true "email of the user"
+// @Success 200
+// @Failure 400 {object} models.Error "some thing wrong with what you sent"
+// @Failure 401 {object} models.Error "Invalid token in header"
+// @Failure 500 {object} models.Error "Something went wrong in server"
+// @Router /auth/updatepassword/{email} [post]
+func (h *HandlerV1) UpdatePassword(ctx *gin.Context) {
+
+	req := pb.ReqUpdatePassword{}
+	err := json.NewDecoder(ctx.Request.Body).Decode(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Error while decoding request json",
+			Error:   err.Error(),
+		})
+		h.log.Error("Error while decoding request json ", zap.Error(err))
+		return
+	}
+
+	email := ctx.Param("email")
+	err = validations.ValidateEmail(email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Invalid Email",
+			Error:   err.Error(),
+		})
+		h.log.Info("invalid Email ", zap.Error(err))
+		return
+	}
+	err = validations.ValidatePassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Invalid Password",
+			Error:   err.Error(),
+		})
+		h.log.Info("invalid password ", zap.Error(err))
+		return
+	}
+	req.Email = email
+	status, err := h.authService.UpdatePassword(ctx, &req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.Error{
+			Message: "Failed to send email",
+			Error:   err.Error(),
+		})
+		h.log.Error("Failed to send email ", zap.Error(err))
+		return
+	}
+
+	ctx.JSON(200, status)
 }

@@ -2,8 +2,9 @@ package redis
 
 import (
 	"auth_service/config"
+	"context"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 func ConnectDB() (*redis.Client, error) {
@@ -14,9 +15,10 @@ func ConnectDB() (*redis.Client, error) {
 		DB:       0,
 	})
 
-	if err := client.Ping().Err(); err != nil {
+	err := client.Ping(context.Background()).Err()
+	if err != nil {
 		return nil, err
 	}
-
+	
 	return client, nil
 }

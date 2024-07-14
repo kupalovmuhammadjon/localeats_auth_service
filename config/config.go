@@ -22,6 +22,7 @@ type Config struct {
 	REDIS_PORT          string
 	REDIS_PASSWORD      string
 	LOG_PATH            string
+	APP_PASSWORD        string
 }
 
 func Load() *Config {
@@ -44,6 +45,7 @@ func Load() *Config {
 	config.REDIS_PORT = cast.ToString(coalesce("REDIS_PORT", "root"))
 	config.REDIS_PASSWORD = cast.ToString(coalesce("REDIS_PASSWORD", "root"))
 	config.LOG_PATH = cast.ToString(coalesce("LOG_PATH", "areyouinterested.log"))
+	config.APP_PASSWORD = cast.ToString(coalesce("APP_PASSWORD", "COMMONMAN"))
 
 	return &config
 }

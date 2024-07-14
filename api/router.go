@@ -17,7 +17,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:8080
+// @host localhost:9999
 // @BasePath /localeats.uz
 
 // @securityDefinitions.apikey BearerAuth
@@ -40,6 +40,8 @@ func NewRouter(sysConfig *models.SystemConfig) *gin.Engine {
 	auth.POST("/login", handlerV1.Login)
 	auth.POST("/logout", handlerV1.Logout)
 	auth.POST("/refreshtoken", handlerV1.RefreshToken)
+	auth.POST("/resetpassword", handlerV1.ResetPassword)
+	auth.POST("/updatepassword/:email", handlerV1.UpdatePassword)
 
 	return router
 }

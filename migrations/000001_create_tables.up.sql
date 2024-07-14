@@ -34,8 +34,9 @@ CREATE TABLE refresh_tokens (
     user_id uuid REFERENCES users(id) not null,
     token text UNIQUE not null,
     expires_at bigint not null,
+    revoked boolean DEFAULT false,
     created_at TIMESTAMP default CURRENT_TIMESTAMP not null,
-    revoked boolean DEFAULT false
+    deleted_at TIMESTAMP
 );
 
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
