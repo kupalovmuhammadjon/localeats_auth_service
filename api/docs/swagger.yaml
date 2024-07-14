@@ -93,8 +93,6 @@ paths:
           description: Something went wrong in server
           schema:
             $ref: '#/definitions/models.Error'
-      security:
-      - ApiKeyAuth: []
       summary: Login user
       tags:
       - Auth

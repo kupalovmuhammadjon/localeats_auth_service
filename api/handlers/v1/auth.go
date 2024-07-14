@@ -55,6 +55,16 @@ func (h *HandlerV1) Register(ctx *gin.Context) {
 		h.log.Info("invalid password ", zap.Error(err))
 		return
 	}
+	err = validations.ValidatePhoneNumber(req.PhoneNumber)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Error{
+			Message: "Invalid phone number",
+			Error:   err.Error(),
+		})
+		h.log.Info("invalid phone number ", zap.Error(err))
+		return
+	}
+
 
 	user, err := h.authService.Register(ctx, &req)
 	if err != nil {

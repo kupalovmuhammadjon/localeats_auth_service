@@ -8,7 +8,7 @@ CREATE TABLE users (
     full_name VARCHAR(100) NOT NULL,
     user_type user_type DEFAULT 'customer' NOT NULL, 
     address TEXT,
-    phone_number VARCHAR(20),
+    phone_number VARCHAR(20) not null,
     bio TEXT,
     specialties TEXT[], 
     years_of_experience INTEGER CHECK (years_of_experience >= 0),

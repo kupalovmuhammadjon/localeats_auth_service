@@ -21,11 +21,6 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
                 "description": "checks the user and returns tokens",
                 "consumes": [
                     "application/json"

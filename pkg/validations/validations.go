@@ -3,6 +3,7 @@ package validations
 import (
 	"errors"
 	"net/mail"
+	"regexp"
 	"unicode"
 )
 
@@ -51,6 +52,18 @@ func ValidatePassword(password string) error {
 	}
 	if !hasSpecialChar {
 		return errors.New("password must have at least one special character")
+	}
+
+	return nil
+}
+
+func ValidatePhoneNumber(number string) error {
+	regexPattern := `^\+998(9[0-9])\d{7}$`
+
+	regex := regexp.MustCompile(regexPattern)
+
+	if !regex.MatchString(number) {
+		return errors.New("invalid Uzbek phone number")
 	}
 
 	return nil
