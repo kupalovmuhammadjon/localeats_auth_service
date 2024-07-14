@@ -132,3 +132,26 @@ func (u *UserRepo) DeleteUser(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (u *UserRepo) ValidateUserId(ctx context.Context, id string) error {
+	query := `
+	SELECT 
+		1
+	FROM 
+		users
+	WHERE 
+		id = $1
+
+	`
+
+	var exists int
+	err := u.Db.QueryRowContext(ctx, query, id).Scan(&exists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("user ID %s does not exist", id)
+		}
+		return fmt.Errorf("error checking user ID %s: %v", id, err)
+	}
+
+	return nil
+}

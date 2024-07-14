@@ -50,3 +50,12 @@ func (u *UserService) DeleteUser(ctx context.Context, id *pb.Id) (*pb.Status, er
 	return &pb.Status{Message: "Deleted successfully"}, nil
 }
 
+func (u *UserService) ValidateUserId(ctx context.Context, id *pb.Id) (*pb.Void, error) {
+	err := u.userRepo.ValidateUserId(ctx, id.Id)
+	if err != nil {
+		u.log.Info("not valid user id ", zap.Error(err))
+		return nil, err
+	}
+	return &pb.Void{}, nil
+}
+

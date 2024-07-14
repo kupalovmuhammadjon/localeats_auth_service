@@ -1,3 +1,5 @@
 .env
 Makefile
 app.log
+.vscode
+.idea

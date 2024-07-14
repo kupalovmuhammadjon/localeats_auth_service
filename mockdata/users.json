@@ -1,0 +1,43 @@
+[
+    {
+      "email": "john.doe@example.com",
+      "full_name": "John Doe",
+      "password": "Str0ngP@ssw0rd!",
+      "phone_number": "+998901234567",
+      "user_type": "customer",
+      "username": "john_doe"
+    },
+    {
+      "email": "jane.smith@example.com",
+      "full_name": "Jane Smith",
+      "password": "Secur3P@ssw0rd!",
+      "phone_number": "+998901234568",
+      "user_type": "customer",
+      "username": "jane_smith"
+    },
+    {
+      "email": "alice.johnson@example.com",
+      "full_name": "Alice Johnson",
+      "password": "P@ssw0rd1234!",
+      "phone_number": "+998901234569",
+      "user_type": "chef",
+      "username": "alice_johnson"
+    },
+    {
+      "email": "bob.brown@example.com",
+      "full_name": "Bob Brown",
+      "password": "Str0ngP@ss123!",
+      "phone_number": "+998901234570",
+      "user_type": "customer",
+      "username": "bob_brown"
+    },
+    {
+      "email": "carol.white@example.com",
+      "full_name": "Carol White",
+      "password": "P@ssw0rd5678!",
+      "phone_number": "+998901234571",
+      "user_type": "customer",
+      "username": "carol_white"
+    }
+  ]
+  
