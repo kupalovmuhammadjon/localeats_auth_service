@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KitchenClient interface {
 	CreateKitchen(ctx context.Context, in *ReqCreateKitchen, opts ...grpc.CallOption) (*KitchenInfo, error)
-	UpdateKitchen(ctx context.Context, in *KitchenInfo, opts ...grpc.CallOption) (*KitchenInfo, error)
+	UpdateKitchen(ctx context.Context, in *ReqUpdateKitchen, opts ...grpc.CallOption) (*KitchenInfo, error)
 	GetKitchenById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*KitchenInfo, error)
 	GetKitchens(ctx context.Context, in *Pagination, opts ...grpc.CallOption) (*Kitchens, error)
 	SearchKitchens(ctx context.Context, in *Search, opts ...grpc.CallOption) (*Kitchens, error)
@@ -46,7 +46,7 @@ func (c *kitchenClient) CreateKitchen(ctx context.Context, in *ReqCreateKitchen,
 	return out, nil
 }
 
-func (c *kitchenClient) UpdateKitchen(ctx context.Context, in *KitchenInfo, opts ...grpc.CallOption) (*KitchenInfo, error) {
+func (c *kitchenClient) UpdateKitchen(ctx context.Context, in *ReqUpdateKitchen, opts ...grpc.CallOption) (*KitchenInfo, error) {
 	out := new(KitchenInfo)
 	err := c.cc.Invoke(ctx, "/kitchen.Kitchen/UpdateKitchen", in, out, opts...)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *kitchenClient) SearchKitchens(ctx context.Context, in *Search, opts ...
 // for forward compatibility
 type KitchenServer interface {
 	CreateKitchen(context.Context, *ReqCreateKitchen) (*KitchenInfo, error)
-	UpdateKitchen(context.Context, *KitchenInfo) (*KitchenInfo, error)
+	UpdateKitchen(context.Context, *ReqUpdateKitchen) (*KitchenInfo, error)
 	GetKitchenById(context.Context, *Id) (*KitchenInfo, error)
 	GetKitchens(context.Context, *Pagination) (*Kitchens, error)
 	SearchKitchens(context.Context, *Search) (*Kitchens, error)
@@ -101,7 +101,7 @@ type UnimplementedKitchenServer struct {
 func (UnimplementedKitchenServer) CreateKitchen(context.Context, *ReqCreateKitchen) (*KitchenInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateKitchen not implemented")
 }
-func (UnimplementedKitchenServer) UpdateKitchen(context.Context, *KitchenInfo) (*KitchenInfo, error) {
+func (UnimplementedKitchenServer) UpdateKitchen(context.Context, *ReqUpdateKitchen) (*KitchenInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateKitchen not implemented")
 }
 func (UnimplementedKitchenServer) GetKitchenById(context.Context, *Id) (*KitchenInfo, error) {
@@ -145,7 +145,7 @@ func _Kitchen_CreateKitchen_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Kitchen_UpdateKitchen_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(KitchenInfo)
+	in := new(ReqUpdateKitchen)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func _Kitchen_UpdateKitchen_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/kitchen.Kitchen/UpdateKitchen",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KitchenServer).UpdateKitchen(ctx, req.(*KitchenInfo))
+		return srv.(KitchenServer).UpdateKitchen(ctx, req.(*ReqUpdateKitchen))
 	}
 	return interceptor(ctx, in, info, handler)
 }

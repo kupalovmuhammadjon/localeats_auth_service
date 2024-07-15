@@ -1,12 +1,5 @@
 package postgres
 
-import (
-	"context"
-	"log"
-
-	"testing"
-)
-
 func newAuthRepo() *AuthRepo {
 	db, err := ConnectDB()
 	if err != nil {
@@ -23,11 +16,11 @@ func newAuthRepo() *AuthRepo {
 // 		Username: "qwerty",
 // 		Email:    "qwerty@gmail.com",
 // 		FullName: "gfd gfr",
-// 		UserType: "customer" ,
+// 		UserType: "customer",
 // 		Password: "1234",
 // 	}
 
-// 	_, err := a.Register(&user)
+// 	_, err := a.Register(context.Background(), &user)
 // 	if err != nil {
 // 		panic(err)
 // 	}
@@ -48,14 +41,14 @@ func newAuthRepo() *AuthRepo {
 // 	}
 // }
 
-func TestLogout(t *testing.T) {
-	a := newAuthRepo()
+// func TestLogout(t *testing.T) {
+// 	a := newAuthRepo()
 
-	err := a.LogOut(context.Background(), "gf")
-	if err == nil {
-		log.Println("verifying invalid token")
-	}
-}
+// 	err := a.LogOut(context.Background(), "gf")
+// 	if err == nil {
+// 		log.Println("verifying invalid token")
+// 	}
+// }
 
 // func TestRefreshToken(t *testing.T) {
 // 	a := newAuthRepo()

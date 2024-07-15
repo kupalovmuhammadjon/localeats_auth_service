@@ -3,6 +3,7 @@ package main
 import (
 	pba "auth_service/genproto/auth"
 	pbu "auth_service/genproto/user"
+	pbk "auth_service/genproto/kitchen"
 	"auth_service/service"
 
 	"auth_service/config"
@@ -54,6 +55,7 @@ func main() {
 
 	pbu.RegisterUserServiceServer(server, service.NewUserService(systemConfig))
 	pba.RegisterAuthServer(server, service.NewAuthService(systemConfig))
+	pbk.RegisterKitchenServer(server, service.NewKitchenService(systemConfig))
 
 	log.Info("User service is started working ")
 	err = server.Serve(listener)
