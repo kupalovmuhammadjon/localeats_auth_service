@@ -188,3 +188,25 @@ func (k *KitchenRepo) SearchKitchens(ctx context.Context, search *pb.Search) (*p
 
 	return &kitchens, rows.Err()
 }
+
+func (k *KitchenRepo) DeleteKitchen(ctx context.Context, id string) error {
+	query := `
+		UPDATE 
+			kitchens
+		SET 
+			deleted_at = NOW()
+		WHERE 
+			id = $1 AND deleted_at IS NULL
+	`
+
+	_, err := k.Db.ExecContext(ctx, query, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("No kitchen found with id: %s or it is already deleted", id)
+			return nil 
+		}
+		return err
+	}
+
+	return nil
+}

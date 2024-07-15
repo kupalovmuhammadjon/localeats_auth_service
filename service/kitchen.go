@@ -73,3 +73,13 @@ func (k *KitchenService) SearchKitchens(ctx context.Context, req *pb.Search) (*p
 	return kitchens, nil
 }
 
+func (k *KitchenService) DeleteKitchen(ctx context.Context, req *pb.Id) (*pb.Void, error){
+	err := k.kitchenRepo.DeleteKitchen(ctx, req.Id)
+	if err != nil {
+		k.log.Error("failed to delete kitchen ", zap.Error(err))
+		return nil, err
+	}
+	
+	return &pb.Void{}, nil
+}
+
