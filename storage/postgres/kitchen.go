@@ -210,3 +210,27 @@ func (k *KitchenRepo) DeleteKitchen(ctx context.Context, id string) error {
 
 	return nil
 }
+
+
+func (k *KitchenRepo) ValidateKitchenId(ctx context.Context, id string) error {
+	query := `
+	SELECT 
+		1
+	FROM 
+		kitchens
+	WHERE 
+		id = $1
+
+	`
+
+	var exists int
+	err := k.Db.QueryRowContext(ctx, query, id).Scan(&exists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("kitchen ID %s does not exist", id)
+		}
+		return fmt.Errorf("error checking kitchen ID %s: %v", id, err)
+	}
+
+	return nil
+}

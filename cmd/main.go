@@ -1,18 +1,21 @@
 package main
 
 import (
-	pba "auth_service/genproto/auth"
-	pbu "auth_service/genproto/user"
-	pbk "auth_service/genproto/kitchen"
-	"auth_service/service"
-
+	"auth_service/api"
 	"auth_service/config"
+	pba "auth_service/genproto/auth"
+	pbk "auth_service/genproto/kitchen"
+	pbu "auth_service/genproto/user"
 	"auth_service/models"
-	"auth_service/pkg/logger"
+	logger "auth_service/pkg/logger"
+	"auth_service/service"
 	"auth_service/storage/postgres"
 	"auth_service/storage/redis"
+	"log"
 	"net"
+	"sync"
 
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -45,7 +48,31 @@ func main() {
 		Logger:     log,
 	}
 
-	listener, err := net.Listen("tcp", cfg.AUTH_SERVICE_PORT)
+	router := api.NewRouter(systemConfig)
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go runHttpServer(router, cfg, &wg)
+	go runGrpcServer(systemConfig, &wg)
+
+	wg.Wait()
+}
+
+func runHttpServer(router *gin.Engine, cfg *config.Config, wait *sync.WaitGroup) {
+	defer wait.Done()
+
+	err := router.Run(cfg.HTTP_PORT)
+	if err != nil {
+		log.Fatal("Server failed to run ", zap.Error(err))
+		return
+	}
+}
+
+func runGrpcServer(sysConfig *models.SystemConfig, wait *sync.WaitGroup) {
+	defer wait.Done()
+
+	listener, err := net.Listen("tcp", sysConfig.Config.AUTH_SERVICE_PORT)
 	if err != nil {
 		log.Fatal("can not create listener ", zap.Error(err))
 		return
@@ -53,11 +80,11 @@ func main() {
 
 	server := grpc.NewServer()
 
-	pbu.RegisterUserServiceServer(server, service.NewUserService(systemConfig))
-	pba.RegisterAuthServer(server, service.NewAuthService(systemConfig))
-	pbk.RegisterKitchenServer(server, service.NewKitchenService(systemConfig))
+	pbu.RegisterUserServiceServer(server, service.NewUserService(sysConfig))
+	pba.RegisterAuthServer(server, service.NewAuthService(sysConfig))
+	pbk.RegisterKitchenServer(server, service.NewKitchenService(sysConfig))
 
-	log.Info("User service is started working ")
+	sysConfig.Logger.Info("User service is started working ")
 	err = server.Serve(listener)
 	if err != nil {
 		log.Fatal("failed to serve to listener listener ", zap.Error(err))

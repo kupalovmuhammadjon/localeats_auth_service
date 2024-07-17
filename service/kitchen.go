@@ -83,3 +83,13 @@ func (k *KitchenService) DeleteKitchen(ctx context.Context, req *pb.Id) (*pb.Voi
 	return &pb.Void{}, nil
 }
 
+func (k *KitchenService) ValidateKitchenId(ctx context.Context, req *pb.Id) (*pb.Void, error){
+	err := k.kitchenRepo.ValidateKitchenId(ctx, req.Id)
+	if err != nil {
+		k.log.Info("invalid kitchen id ", zap.Error(err))
+		return nil, err
+	}
+	
+	return &pb.Void{}, nil
+}
+
