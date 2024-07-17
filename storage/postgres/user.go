@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -154,4 +155,104 @@ func (u *UserRepo) ValidateUserId(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (u *UserRepo) CreateUserPreference(ctx context.Context, pref *pb.Preferences) (*pb.PreferencesRes, error) {
+	query := `
+	insert into
+		user_preferences(
+		user_id,
+		cuisine_type,
+		dietary_preferences,
+		favorite_kitchen_ids,
+		created_at,
+		updated_at)
+	values($1, $2, $3, $4, $5, $6)
+	`
+
+	currentTime := time.Now().Format(time.RFC3339)
+	res := pb.PreferencesRes{
+		UserId:             pref.UserId,
+		CuisineType:        pref.CuisineType,
+		DietaryPreferences: pref.DietaryPreferences,
+		FavoriteKitchenIds: pref.FavoriteKitchenIds,
+		CreatedAt:          currentTime,
+		UpdatedAt:          currentTime,
+	}
+
+	_, err := u.Db.ExecContext(ctx, query, res.UserId, res.CuisineType, pq.Array(res.DietaryPreferences),
+		pq.Array(res.FavoriteKitchenIds), res.CreatedAt, res.UpdatedAt)
+
+	return &res, err
+}
+
+func (u *UserRepo) UpdateUserPreference(ctx context.Context, pref *pb.Preferences) (*pb.PreferencesRes, error) {
+	query := `
+	update
+		user_preferences
+	set
+		cuisine_type = $1,
+		dietary_preferences = $2,
+		favorite_kitchen_ids = $3,
+		updated_at = now()
+	where
+		user_id = $4
+	returning
+		user_id,
+		cuisine_type,
+		dietary_preferences,
+		favorite_kitchen_ids,
+		created_at,
+		updated_at
+	`
+
+	res := pb.PreferencesRes{}
+
+	row := u.Db.QueryRowContext(ctx, query, pref.CuisineType, pq.Array(pref.DietaryPreferences),
+		pq.Array(pref.FavoriteKitchenIds), pref.UserId)
+
+	err := row.Scan(&res.UserId, &res.CuisineType, pq.Array(&res.DietaryPreferences), pq.Array(&res.FavoriteKitchenIds),
+		&res.CreatedAt, &res.UpdatedAt)
+
+	return &res, err
+}
+
+func (u *UserRepo) GetUserPreference(ctx context.Context, id string) (*pb.PreferencesRes, error) {
+	query := `
+	select
+		user_id,
+		cuisine_type,
+		dietary_preferences,
+		favorite_kitchen_ids,
+		created_at,
+		updated_at
+	from
+		user_preferences
+	where
+		user_id = $1
+	`
+
+	res := pb.PreferencesRes{}
+
+	row := u.Db.QueryRowContext(ctx, query, id)
+
+	err := row.Scan(&res.UserId, &res.CuisineType, pq.Array(&res.DietaryPreferences), pq.Array(&res.FavoriteKitchenIds),
+		&res.CreatedAt, &res.UpdatedAt)
+
+	return &res, err
+}
+
+func (u *UserRepo) DeleteUserPreference(ctx context.Context, id string) error {
+	query := `
+	update
+		user_preferences
+	set
+		deleted_at = now()
+	where
+		user_id = $1
+	`
+
+	_, err := u.Db.ExecContext(ctx, query, id)
+
+	return err
 }

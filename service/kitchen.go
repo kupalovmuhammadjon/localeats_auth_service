@@ -93,3 +93,13 @@ func (k *KitchenService) ValidateKitchenId(ctx context.Context, req *pb.Id) (*pb
 	return &pb.Void{}, nil
 }
 
+func (k *KitchenService) GetKitchenIdsByCusineType(ctx context.Context, req *pb.Cusine) (*pb.Ids, error){
+	ids, err := k.kitchenRepo.GetKitchenIdsByCusineType(ctx, req.Cusine)
+	if err != nil {
+		k.log.Info("failed to get ids ", zap.Error(err))
+		return nil, err
+	}
+	
+	return &pb.Ids{Ids: ids}, nil
+}
+

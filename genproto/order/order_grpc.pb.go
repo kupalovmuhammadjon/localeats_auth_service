@@ -29,7 +29,6 @@ type OrderClient interface {
 	GetOrdersForChef(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Orders, error)
 	DeleteOrder(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Void, error)
 	ValidateOrderId(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Void, error)
-	RecommendDishes(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Recommendations, error)
 	GetKitchenStatistics(ctx context.Context, in *DateFilter, opts ...grpc.CallOption) (*KitchenStatistics, error)
 	GetUserStatistics(ctx context.Context, in *DateFilter, opts ...grpc.CallOption) (*UserStatistics, error)
 	ManageWorkingHours(ctx context.Context, in *Id, opts ...grpc.CallOption) (*WorkingHours, error)
@@ -106,15 +105,6 @@ func (c *orderClient) ValidateOrderId(ctx context.Context, in *Id, opts ...grpc.
 	return out, nil
 }
 
-func (c *orderClient) RecommendDishes(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Recommendations, error) {
-	out := new(Recommendations)
-	err := c.cc.Invoke(ctx, "/order.Order/RecommendDishes", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *orderClient) GetKitchenStatistics(ctx context.Context, in *DateFilter, opts ...grpc.CallOption) (*KitchenStatistics, error) {
 	out := new(KitchenStatistics)
 	err := c.cc.Invoke(ctx, "/order.Order/GetKitchenStatistics", in, out, opts...)
@@ -153,7 +143,6 @@ type OrderServer interface {
 	GetOrdersForChef(context.Context, *Filter) (*Orders, error)
 	DeleteOrder(context.Context, *Id) (*Void, error)
 	ValidateOrderId(context.Context, *Id) (*Void, error)
-	RecommendDishes(context.Context, *Filter) (*Recommendations, error)
 	GetKitchenStatistics(context.Context, *DateFilter) (*KitchenStatistics, error)
 	GetUserStatistics(context.Context, *DateFilter) (*UserStatistics, error)
 	ManageWorkingHours(context.Context, *Id) (*WorkingHours, error)
@@ -184,9 +173,6 @@ func (UnimplementedOrderServer) DeleteOrder(context.Context, *Id) (*Void, error)
 }
 func (UnimplementedOrderServer) ValidateOrderId(context.Context, *Id) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateOrderId not implemented")
-}
-func (UnimplementedOrderServer) RecommendDishes(context.Context, *Filter) (*Recommendations, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecommendDishes not implemented")
 }
 func (UnimplementedOrderServer) GetKitchenStatistics(context.Context, *DateFilter) (*KitchenStatistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetKitchenStatistics not implemented")
@@ -336,24 +322,6 @@ func _Order_ValidateOrderId_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Order_RecommendDishes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Filter)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrderServer).RecommendDishes(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/order.Order/RecommendDishes",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrderServer).RecommendDishes(ctx, req.(*Filter))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Order_GetKitchenStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DateFilter)
 	if err := dec(in); err != nil {
@@ -442,10 +410,6 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ValidateOrderId",
 			Handler:    _Order_ValidateOrderId_Handler,
-		},
-		{
-			MethodName: "RecommendDishes",
-			Handler:    _Order_RecommendDishes_Handler,
 		},
 		{
 			MethodName: "GetKitchenStatistics",

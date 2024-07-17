@@ -26,6 +26,8 @@ type UserServiceClient interface {
 	UpdateProfile(ctx context.Context, in *ReqUpdateUser, opts ...grpc.CallOption) (*User, error)
 	DeleteUser(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Status, error)
 	ValidateUserId(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Void, error)
+	UpdateUserPreferences(ctx context.Context, in *Preferences, opts ...grpc.CallOption) (*PreferencesRes, error)
+	GetUserPreference(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PreferencesRes, error)
 }
 
 type userServiceClient struct {
@@ -72,6 +74,24 @@ func (c *userServiceClient) ValidateUserId(ctx context.Context, in *Id, opts ...
 	return out, nil
 }
 
+func (c *userServiceClient) UpdateUserPreferences(ctx context.Context, in *Preferences, opts ...grpc.CallOption) (*PreferencesRes, error) {
+	out := new(PreferencesRes)
+	err := c.cc.Invoke(ctx, "/user.UserService/UpdateUserPreferences", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserPreference(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PreferencesRes, error) {
+	out := new(PreferencesRes)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetUserPreference", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -80,6 +100,8 @@ type UserServiceServer interface {
 	UpdateProfile(context.Context, *ReqUpdateUser) (*User, error)
 	DeleteUser(context.Context, *Id) (*Status, error)
 	ValidateUserId(context.Context, *Id) (*Void, error)
+	UpdateUserPreferences(context.Context, *Preferences) (*PreferencesRes, error)
+	GetUserPreference(context.Context, *Id) (*PreferencesRes, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -98,6 +120,12 @@ func (UnimplementedUserServiceServer) DeleteUser(context.Context, *Id) (*Status,
 }
 func (UnimplementedUserServiceServer) ValidateUserId(context.Context, *Id) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateUserId not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateUserPreferences(context.Context, *Preferences) (*PreferencesRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserPreferences not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserPreference(context.Context, *Id) (*PreferencesRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserPreference not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -184,6 +212,42 @@ func _UserService_ValidateUserId_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UpdateUserPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Preferences)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateUserPreferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/UpdateUserPreferences",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateUserPreferences(ctx, req.(*Preferences))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserPreference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetUserPreference",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserPreference(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +270,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ValidateUserId",
 			Handler:    _UserService_ValidateUserId_Handler,
+		},
+		{
+			MethodName: "UpdateUserPreferences",
+			Handler:    _UserService_UpdateUserPreferences_Handler,
+		},
+		{
+			MethodName: "GetUserPreference",
+			Handler:    _UserService_GetUserPreference_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

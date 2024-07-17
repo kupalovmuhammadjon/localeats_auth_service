@@ -29,6 +29,7 @@ type DishClient interface {
 	DeleteDish(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Void, error)
 	ValidateDishId(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Void, error)
 	UpdateNutritionInfo(ctx context.Context, in *NutritionInfo, opts ...grpc.CallOption) (*DishInfo, error)
+	RecommendDishes(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Recommendations, error)
 }
 
 type dishClient struct {
@@ -102,6 +103,15 @@ func (c *dishClient) UpdateNutritionInfo(ctx context.Context, in *NutritionInfo,
 	return out, nil
 }
 
+func (c *dishClient) RecommendDishes(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Recommendations, error) {
+	out := new(Recommendations)
+	err := c.cc.Invoke(ctx, "/dish.Dish/RecommendDishes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DishServer is the server API for Dish service.
 // All implementations must embed UnimplementedDishServer
 // for forward compatibility
@@ -113,6 +123,7 @@ type DishServer interface {
 	DeleteDish(context.Context, *Id) (*Void, error)
 	ValidateDishId(context.Context, *Id) (*Void, error)
 	UpdateNutritionInfo(context.Context, *NutritionInfo) (*DishInfo, error)
+	RecommendDishes(context.Context, *Filter) (*Recommendations, error)
 	mustEmbedUnimplementedDishServer()
 }
 
@@ -140,6 +151,9 @@ func (UnimplementedDishServer) ValidateDishId(context.Context, *Id) (*Void, erro
 }
 func (UnimplementedDishServer) UpdateNutritionInfo(context.Context, *NutritionInfo) (*DishInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNutritionInfo not implemented")
+}
+func (UnimplementedDishServer) RecommendDishes(context.Context, *Filter) (*Recommendations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecommendDishes not implemented")
 }
 func (UnimplementedDishServer) mustEmbedUnimplementedDishServer() {}
 
@@ -280,6 +294,24 @@ func _Dish_UpdateNutritionInfo_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dish_RecommendDishes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Filter)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DishServer).RecommendDishes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dish.Dish/RecommendDishes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DishServer).RecommendDishes(ctx, req.(*Filter))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Dish_ServiceDesc is the grpc.ServiceDesc for Dish service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -314,6 +346,10 @@ var Dish_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateNutritionInfo",
 			Handler:    _Dish_UpdateNutritionInfo_Handler,
+		},
+		{
+			MethodName: "RecommendDishes",
+			Handler:    _Dish_RecommendDishes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

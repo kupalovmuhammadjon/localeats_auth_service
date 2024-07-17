@@ -155,12 +155,12 @@ func (k *KitchenRepo) GetKitchens(ctx context.Context, filter *pb.Pagination) (*
 func (k *KitchenRepo) SearchKitchens(ctx context.Context, search *pb.Search) (*pb.Kitchens, error) {
 	query := `
 	select 
-            id, name, cuisine_type, address, rating, total_orders 
-        from 
-            kitchens 
-        where 
-            deleted_at IS NULL and 
-			to_tsvector(name || ' ' || cuisine_type || ' ' || address || ' ' || rating::text) @@ plainto_tsquery($1)
+		id, name, cuisine_type, address, rating, total_orders 
+	from 
+		kitchens 
+	where 
+		deleted_at IS NULL and 
+		to_tsvector(name || ' ' || cuisine_type || ' ' || address || ' ' || rating::text) @@ plainto_tsquery($1)
 	`
 
 	query += fmt.Sprintf(" offset %d", (search.Page-1)*search.Limit)
@@ -168,8 +168,6 @@ func (k *KitchenRepo) SearchKitchens(ctx context.Context, search *pb.Search) (*p
 
 	text := fmt.Sprintf("%s %s %s %v.00", search.Name, search.CuisineType, search.Address, search.Rating)
 	rows, err := k.Db.QueryContext(ctx, query, text)
-	fmt.Println(query)
-	fmt.Println(text)
 	if err != nil {
 		return nil, err
 	}
@@ -233,4 +231,35 @@ func (k *KitchenRepo) ValidateKitchenId(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (k *KitchenRepo) GetKitchenIdsByCusineType(ctx context.Context, cusiene string) ([]string, error) {
+	query := `
+	select 
+		id
+	from 
+		kitchens 
+	where 
+		deleted_at IS NULL and cuisine_type = $1
+	`
+
+	rows, err := k.Db.QueryContext(ctx, query, cusiene)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	kitchens := []string{}
+
+	for rows.Next() {
+		kitchen := ""
+
+		err := rows.Scan(&kitchen)
+		if err != nil {
+			return nil, err
+		}
+		kitchens = append(kitchens, kitchen)
+	}
+
+	return kitchens, rows.Err()
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"auth_service/api/handlers/tokens"
 	pb "auth_service/genproto/auth"
+	pbu "auth_service/genproto/user"
 	"auth_service/models"
 	"auth_service/storage/postgres"
 	"auth_service/storage/redis"
@@ -13,6 +14,7 @@ import (
 
 type AuthService struct {
 	authRepo         *postgres.AuthRepo
+	userRepo         *postgres.UserRepo
 	verificationRepo *redis.VerificationRepo
 	log              *zap.Logger
 	pb.UnimplementedAuthServer
@@ -22,6 +24,7 @@ func NewAuthService(sysConfig *models.SystemConfig) *AuthService {
 
 	return &AuthService{
 		authRepo:         postgres.NewAuthRepo(sysConfig.PostgresDb),
+		userRepo:         postgres.NewUserRepo(sysConfig.PostgresDb),
 		verificationRepo: redis.NewVerificationRepo(sysConfig),
 		log:              sysConfig.Logger,
 	}
@@ -31,6 +34,11 @@ func (a *AuthService) Register(ctx context.Context, req *pb.ReqCreateUser) (*pb.
 	user, err := a.authRepo.Register(ctx, req)
 	if err != nil {
 		a.log.Error("user is not registerd", zap.Error(err))
+		return nil, err
+	}
+	_, err = a.userRepo.CreateUserPreference(ctx, &pbu.Preferences{UserId: user.Id})
+	if err != nil {
+		a.log.Error("failed to create user precerences", zap.Error(err))
 		return nil, err
 	}
 	return user, nil

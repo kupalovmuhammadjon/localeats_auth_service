@@ -59,3 +59,22 @@ func (u *UserService) ValidateUserId(ctx context.Context, id *pb.Id) (*pb.Void, 
 	return &pb.Void{}, nil
 }
 
+func (u *UserService) UpdateUserPreferences(ctx context.Context, pref *pb.Preferences) (*pb.PreferencesRes, error){
+	res, err := u.userRepo.UpdateUserPreference(ctx, pref)
+	if err != nil {
+		u.log.Error("failed to UpdateUserPreferences ", zap.Error(err))
+		return nil, err
+	}
+
+	return res, err
+}
+
+func (u *UserService) GetUserPreference(ctx context.Context, id *pb.Id) (*pb.PreferencesRes, error){
+	res, err := u.userRepo.GetUserPreference(ctx, id.Id)
+	if err != nil {
+		u.log.Error("failed to GetUserPreference ", zap.Error(err))
+		return nil, err
+	}
+
+	return res, err
+}
